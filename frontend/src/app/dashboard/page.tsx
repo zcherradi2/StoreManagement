@@ -20,6 +20,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useModalFunctions } from '@/shared/functions';
+import { Modal } from '@/views/Modal';
 interface Store {
   id: number;
   name: string;
@@ -35,10 +36,14 @@ interface DashboardCard extends Card{
 }
 
 export default function DashboardPage() {
-  const { isModalOpen, setIsModalOpen, selectedModal, setSelectedModal, closeModal, handleCardClick, getCardsListing, handleModalCards, initModal ,
-    setModalType
-  } = useModalFunctions();
+  // const { isModalOpen, setIsModalOpen,  closeModal, handleCardClick, getCardsListing, handleModalCards, initModal ,
+
+  // } = useModalFunctions();
   const router = useRouter();
+  let root : {[key:string] : [
+    any,
+    (el:any)=>void
+  ]} = useModalFunctions()
   const verifyUserLoggedIn = async (): Promise<boolean> => {
     try {
       // check for token in localStorage
@@ -68,7 +73,7 @@ export default function DashboardPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<string>('');
   const [loading, setLoading] = useState(true);
-
+  root["stores"] = [stores,setStores];
   useEffect(() => {
     fetchStores();
   }, []);
@@ -174,10 +179,35 @@ export default function DashboardPage() {
   const handleExit = () => {
     router.push('/login');
   };
+    const [selectedCard,setSelectedCard] = root.selectedCard
+    const [history,setHistory] = root.history
+    const [isModalOpen, setIsModalOpen] = root.isModalOpen
 
   // var selectedModal = '';
+  const handleCardClick = (card:Card) => {
+    const [route, onclick, modalT] = [card.route, card.onclick, card.modalType];
+    
+    if (onclick === 'modal') {
+        // const instance: [Card | null, string,number] = [selectedCard, selectedModal,modalType];
 
+        if (selectedCard != null) {
+            history.current.push(selectedCard); // Push to the ref's current value
+            console.log('History after push:', history.current);
+        }
 
+        // Trim history to keep only the last 2 entries
+        if (history.current.length > 3) {
+            history.current = history.current.slice(-3);
+        }
+        // setSelectedModal(route);
+        // setModalType(modalT ? modalT : 1);
+        setSelectedCard(card);
+        setIsModalOpen(true);
+    } else {
+        router.push(route);
+    }
+};
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-black">
@@ -254,7 +284,9 @@ export default function DashboardPage() {
           ))}
         </div>
           {/* Modal */}
-      {isModalOpen && initModal()}
+      {isModalOpen && <Modal
+        root={root}
+      />}
         {/* Exit Button */}
         <div className="flex justify-center">
           <button

@@ -1,10 +1,11 @@
 import { Model } from './interfaces';
 
 
-export default class tableWrapper<T extends Model> {
+export default class TableWrapper<T extends Model> {
   private table: string;
   private baseUrl: string;
   public modelClass:  new (...args: any[]) => T;
+  private parameters: Record<string, any> = {};
   constructor(table: string, modelClass: new (...args: any[]) => T , baseUrl = "http://localhost:8000/api") {
     this.table = table;
     this.baseUrl = baseUrl;
@@ -13,19 +14,41 @@ export default class tableWrapper<T extends Model> {
   private hydrate(data: any): T {
     return Object.assign(new this.modelClass(), data);
   }
+  public withParameters(parameters: Record<string, any>){
+    this.parameters = parameters;
+    return this
+  }
   private async request<R = T | T[]>(
     method: string,
     endpoint: string = "",
     body?: Record<string, any>
   ): Promise<R> {
-    
-    const res = await fetch(`${this.baseUrl}/${this.table}${endpoint}`, {
+    console.log(this.parameters)
+    // console.log("heleleleoeeelee")
+    let requestBody = this.parameters
+    ? { ...(body || {}), ...this.parameters }
+    : body;
+    let url = `${this.baseUrl}/${this.table}${endpoint}`;
+    if (method.toUpperCase() === "GET" && requestBody) {
+        const params = new URLSearchParams();
+        for (const key in requestBody) {
+            params.append(key, typeof requestBody[key] === "object" 
+                ? JSON.stringify(requestBody[key])
+                : String(requestBody[key])
+            );
+        }
+        url += `?${params.toString()}`;
+        requestBody = undefined;
+    }
+    console.log(url)
+
+    const res = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      ...(requestBody ? { body: JSON.stringify(requestBody) } : {}),
     });
 
     if (!res.ok) {
@@ -35,8 +58,8 @@ export default class tableWrapper<T extends Model> {
     if (res.status === 204) {
         return undefined as unknown as R; // Explicitly return `undefined` for void responses
     }
-    const data = await res.json();
-    return Array.isArray(data) ? data.map(d => this.hydrate(d)) as R : this.hydrate(data) as unknown as R;
+    const json = await res.json();
+    return Array.isArray(json.data) ? json.data.map((d: T )=> this.hydrate(d)) as R : this.hydrate(json.data) as unknown as R;
   }
 
   async getAll(): Promise<T[]> {

@@ -1,0 +1,31 @@
+import { Modal } from "@/modals/Modal"
+import { ModalRoot, View } from "./interfaces"
+import { useState } from "react"
+import { NewEntryForm } from "@/views/NewEntry"
+
+const views:Record<string,(root:ModalRoot)=>React.JSX.Element> = {
+    default:(root:ModalRoot)=>{
+        return (
+            <div className="flex items-center justify-center h-full">
+                <p className="text-lg font-semibold text-gray-800 text-center m-60">
+                    Default View
+                </p>
+            </div>
+        )
+    },
+    newEntry:(root:ModalRoot)=>{
+        return <NewEntryForm root={root} />;
+
+    }
+}
+
+
+export function CustomView(viewKey:string):View{
+    if(views[viewKey]){
+        return views[viewKey]
+    }
+    return views.default
+}
+
+
+
