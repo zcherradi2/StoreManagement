@@ -1,16 +1,17 @@
 import { Card, ModalRoot, Model, ModelActionHandler, ModelActionHandlerClass, ModelClass } from "@/shared/interfaces";
+import { PageRoot } from "@/shared/PageRoot";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 type CardListingProps<T extends Model> = {
-    root: ModalRoot;
+    root: PageRoot;
     CardDict:{ [key: string]: Card};
     title:string
 };
 export function CardListing<T extends Model>(props: CardListingProps<T>) {
         let { root,CardDict,title } = props;
-        const [selectedCard,setSelectedCard] = root.selectedCard
-        const [history,setHistory] = root.history
-        const [isModalOpen, setIsModalOpen] = root.isModalOpen
+        const [selectedCard,setSelectedCard] = [root.selectedCard,root.setSelectedCard]
+        const history = root.history
+        const [isModalOpen, setIsModalOpen] = [root.isModalOpen, root.setIsModalOpen]
         const router = root.router;
         const handleCardClick = (card:Card) => {
             const [route, onclick, modalT] = [card.route, card.onclick, card.modalType];

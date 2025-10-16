@@ -19,9 +19,6 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { Card,Doc,Inventory } from './interfaces';
-import tableWrapper from "./model"
-import { Listing } from '@/modals/Modal';
-import TableWrapper from './model';
 import { CustomView } from './CustomView';
 
 export const ModalCards: { [key: string]: [string, { [key: string]: Card }] } = {
@@ -35,7 +32,7 @@ export const ModalCards: { [key: string]: [string, { [key: string]: Card }] } = 
         color: 'from-blue-500 to-blue-600',
         onclick: 'modal',
         modalType: 2,
-        listing:Doc,
+        model:Doc,
         addCard:{
           title: 'create new Entry',
           route: '/CreateNewEntry',
@@ -54,7 +51,7 @@ export const ModalCards: { [key: string]: [string, { [key: string]: Card }] } = 
         color: 'from-red-500 to-red-600',
         onclick: 'modal',
         modalType: 2,
-        listing:Doc,
+        model:Doc,
       },
       // stockInventory: {
       //   title: 'Stock Inventory',

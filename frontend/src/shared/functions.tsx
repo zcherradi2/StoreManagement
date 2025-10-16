@@ -1,19 +1,18 @@
 'use client';
 
-import { Card, Doc, Inventory, ModalRoot, Model } from './interfaces';
-import { ModalCards } from './constants';
+import { Card, Doc, Inventory, ModalRoot, Model,Store } from './interfaces';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
-import { Listing } from '@/views/Listing';
+import { PageRoot } from './PageRoot';
 // import { Listing } from '@/modals/Modal';
 // import { NewEntryForm } from '@/views/NewEntry';
 // import { NewEntryForm } from './CustomView';
 
 
 // ✅ Renamed to follow hook naming convention (must start with "use")
-export const useModalFunctions = () => {
+export const useRoot = ():PageRoot => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const router = useRouter();
     // const [selectedModal, setSelectedModal] = useState('');
@@ -25,6 +24,8 @@ export const useModalFunctions = () => {
     const [error, setError] = useState<string | null>(null); // State to track errors
     const history = useRef<Card[]>([]); // Use a ref to persist history
     const [selectedItem,setSelectedItem] = useState<Model|null>(null)
+    const [stores, setStores] = useState<Store[]>([]);
+    const [selectedStore, setSelectedStore] = useState<string>('');
     const root:{[key:string] : [any,(el:any)=>void] } = {
         selectedCard:[selectedCard,setSelectedCard],
         loading:[loading,setLoading],
@@ -33,9 +34,11 @@ export const useModalFunctions = () => {
         isModalOpen:[isModalOpen, setIsModalOpen],
         selectedItem:[selectedItem,setSelectedItem],
         items:[items, setItems],
-        router:[router,()=>{}]
+        router:[router,()=>{}],
+        stores:[stores,setStores],
+        selectedStore:[selectedStore, setSelectedStore]
     }
-    return root
+    return PageRoot.fromRootDict(root)
     // ✅ Only fetch when selectedCard is set and has a listModel
     // useEffect(() => {
     //     // Don't do anything if no card is selected yet

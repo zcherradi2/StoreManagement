@@ -1,7 +1,8 @@
 import { ModalRoot } from "@/shared/interfaces";
+import { PageRoot } from "@/shared/PageRoot";
 import { useState } from "react";
 
-export const NewEntryForm = ({ root }: { root: ModalRoot }) => {
+export const NewEntryForm = ({ root }: { root: PageRoot }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [number, setNumber] = useState('');
     const [label, setLabel] = useState('');
@@ -105,7 +106,7 @@ export const NewEntryForm = ({ root }: { root: ModalRoot }) => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">Sélectionner un magasin</option>
-                            {root.stores[0].map((store:any) => (
+                            {root.getter("stores").map((store:any) => (
                                 <option key={store.id} value={store.id}>
                                 {store.name} - {store.address}
                                 </option>

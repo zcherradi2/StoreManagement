@@ -1,9 +1,13 @@
-import { Listing } from "@/modals/Modal";
 import React, { Dispatch, SetStateAction } from "react";
 import TableWrapper from "./model";
+import { PageRoot } from "./PageRoot";
 
-export type View = (root: ModalRoot) => React.JSX.Element;
-
+export type View = (root: PageRoot) => React.JSX.Element;
+export interface Store {
+  id: number;
+  name: string;
+  address: string;
+}
 export interface Card {
   title: string;
   route: string;
@@ -11,7 +15,7 @@ export interface Card {
   color: string;
   onclick?: string;
   modalType?: number; // 1: Default, 2: Custom
-  listing?:ModelClass<Model>;
+  model?:ModelClass<Model>;
   addCard?:Card
   view?:View
 }
@@ -52,7 +56,7 @@ export abstract class Model{
             </div>
         );
     }
-    getItemView(this: Model,root:ModalRoot): React.JSX.Element {
+    getItemView(this: Model,root:PageRoot): React.JSX.Element {
         return (
             <div className="flex border-b border-gray-200 py-2">
                 {Object.keys((this.constructor as typeof Model).listingDic).map((attrName) => {
@@ -86,14 +90,14 @@ export type ModelActionHandlerClass<T extends Model> = {
 
 
 }
-export type modelAction<T extends Model>= {(item:T,root:ModalRoot):Promise<void>|void}
+export type modelAction<T extends Model>= {(item:T,root:PageRoot):Promise<void>|void}
 // export type modelActionsHandler<T extends>
 export class ModelActionHandler<T extends Model>{
-    public handleDelete:modelAction<T> = async (item:T,root:ModalRoot)=>{
-        const [loading, setLoading] = root.loading
-        const [items, setItems] = root.items
-        const [selectedItem, setSelectedItem] = root.selectedItem
-        const [error, setError] = root.error
+    public handleDelete:modelAction<T> = async (item:T,root:PageRoot)=>{
+        const [loading, setLoading] = root.dict.loading
+        const [items, setItems] = root.dict.items
+        const [selectedItem, setSelectedItem] = root.dict.selectedItem
+        const [error, setError] = root.dict.error
         try {
             // Show a loading state (optional)
 
@@ -116,21 +120,23 @@ export class ModelActionHandler<T extends Model>{
             setLoading(false);
         }
     };
-    handleAdd:modelAction<T>= (item:T,root:ModalRoot)=>{
+    handleAdd:modelAction<T>= (item:T,root:PageRoot)=>{
+        if(root.selectedCard?.addCard){
+            root.getter("handleCardClick")(root.selectedCard?.addCard)
+        }
+    }
+    handleEdit:modelAction<T>= (item:T,root:PageRoot)=>{
         
     }
-    handleEdit:modelAction<T>= (item:T,root:ModalRoot)=>{
-        
-    }
-    doNothing:modelAction<T> = (item:T,root:ModalRoot)=>{}
+    doNothing:modelAction<T> = (item:T,root:PageRoot)=>{}
     constructor(
         handleDelete?: modelAction<T>,
         handleAdd?: modelAction<T>,
         handleEdit?: modelAction<T>
     ) {
-        this.handleAdd = handleAdd ?? this.doNothing;
-        this.handleDelete = handleDelete ?? this.doNothing;
-        this.handleEdit = handleEdit ?? this.doNothing;
+        this.handleAdd = handleAdd ?? this.handleAdd ?? this.doNothing;
+        this.handleDelete = handleDelete ??  this.handleDelete ?? this.doNothing;
+        this.handleEdit = handleEdit ?? this.handleEdit ?? this.doNothing;
     }
 
 }
@@ -152,7 +158,7 @@ export class Inventory extends Model{
             this.quantity = quantity
             this.purchase_price = purchasePrice
         }
-        getItemView(root:ModalRoot): React.JSX.Element {
+        getItemView(root:PageRoot): React.JSX.Element {
             return (
                 <div className="flex border-b border-gray-200 py-2">
                     <div className="w-1/6 text-center">{this.id}</div>

@@ -19,7 +19,7 @@ import {
   Wallet,
   LogOut,
 } from 'lucide-react';
-import { useModalFunctions } from '@/shared/functions';
+import { useRoot } from '@/shared/functions';
 import { Modal } from '@/views/Modal';
 interface Store {
   id: number;
@@ -39,11 +39,12 @@ export default function DashboardPage() {
   // const { isModalOpen, setIsModalOpen,  closeModal, handleCardClick, getCardsListing, handleModalCards, initModal ,
 
   // } = useModalFunctions();
-  const router = useRouter();
-  let root : {[key:string] : [
-    any,
-    (el:any)=>void
-  ]} = useModalFunctions()
+  // const router = useRouter();
+  // let root : {[key:string] : [
+  //   any,
+  //   (el:any)=>void
+  // ]} = useRoot()
+  const root = useRoot()
   const verifyUserLoggedIn = async (): Promise<boolean> => {
     try {
       // check for token in localStorage
@@ -63,7 +64,7 @@ export default function DashboardPage() {
       // const router = useRouter();
       const isLoggedIn = await verifyUserLoggedIn();
       if (!isLoggedIn) {
-        router.push('/login'); // Redirect to login if not authenticated
+        root.router.push('/login'); // Redirect to login if not authenticated
       }
     };
 
@@ -72,8 +73,12 @@ export default function DashboardPage() {
   }, []);
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStore, setSelectedStore] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  root["stores"] = [stores,setStores];
+  root.putState("stores",[stores, setStores])
+  root.putState("selectedStore",[selectedStore, setSelectedStore])
+
+  // const [loading, setLoading] = useState(true);
+  // root["stores"] = [stores,setStores];
+
   useEffect(() => {
     fetchStores();
   }, []);
@@ -90,7 +95,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching stores:', error);
     } finally {
-      setLoading(false);
+      root.setLoading(false);
     }
   };
   
@@ -177,11 +182,11 @@ export default function DashboardPage() {
   
 
   const handleExit = () => {
-    router.push('/login');
+    root.router.push('/login');
   };
-    const [selectedCard,setSelectedCard] = root.selectedCard
-    const [history,setHistory] = root.history
-    const [isModalOpen, setIsModalOpen] = root.isModalOpen
+    // const [selectedCard,setSelectedCard] = root.selectedCard
+    // const [history,setHistory] = root.history
+    // const [isModalOpen, setIsModalOpen] = root.isModalOpen
 
   // var selectedModal = '';
   const handleCardClick = (card:Card) => {
@@ -190,23 +195,24 @@ export default function DashboardPage() {
     if (onclick === 'modal') {
         // const instance: [Card | null, string,number] = [selectedCard, selectedModal,modalType];
 
-        if (selectedCard != null) {
-            history.current.push(selectedCard); // Push to the ref's current value
-            console.log('History after push:', history.current);
+        if (root.selectedCard != null) {
+            root.history.current.push(root.selectedCard); // Push to the ref's current value
+            console.log('History after push:', root.history.current);
         }
 
         // Trim history to keep only the last 2 entries
-        if (history.current.length > 3) {
-            history.current = history.current.slice(-3);
+        if (root.history.current.length > 3) {
+            root.history.current = root.history.current.slice(-3);
         }
         // setSelectedModal(route);
         // setModalType(modalT ? modalT : 1);
-        setSelectedCard(card);
-        setIsModalOpen(true);
+        root.setSelectedCard(card);
+        root.setIsModalOpen(true);
     } else {
-        router.push(route);
+        root.router.push(route);
     }
-};
+  };
+  root.putState("handleCardClick",[handleCardClick,null])
   
 
   return (
@@ -243,7 +249,7 @@ export default function DashboardPage() {
                 Store
             </label>
 
-            {loading ? (
+            {root.loading ? (
                 <div className="animate-pulse bg-gray-200 h-12 rounded-lg flex-1"></div>
             ) : (
                 <select
@@ -284,7 +290,7 @@ export default function DashboardPage() {
           ))}
         </div>
           {/* Modal */}
-      {isModalOpen && <Modal
+      {root.isModalOpen && <Modal
         root={root}
       />}
         {/* Exit Button */}

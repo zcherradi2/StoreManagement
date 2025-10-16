@@ -1,17 +1,18 @@
 import { ModalRoot, Model, ModelActionHandler, ModelActionHandlerClass, ModelClass } from "@/shared/interfaces";
+import { PageRoot } from "@/shared/PageRoot";
 import { useEffect, useState } from "react";
 type ListingProps<T extends Model> = {
-    root: ModalRoot;
+    root: PageRoot;
     modelClass: ModelClass<T>;                  // T is inferred from this
     actionHandler?: ModelActionHandler<T> | null;
 };
 export function Listing<T extends Model>(props: ListingProps<T>) {
     let { root, modelClass, actionHandler } = props;
     const [items, setItems] = useState<Array<T>>([]);
-    const [loading, setLoading] = root.loading
-    const [error,setError] =root.error
-    const [selectedCard,setSelectedCard] = root.selectedCard
-    const [selectedItem,setSelectedItem] = root.selectedItem
+    const [loading, setLoading] = [root.loading,root.setLoading]
+    const [error,setError] = [root.error,root.setError]
+    const [selectedCard,setSelectedCard] = [root.selectedCard,root.setSelectedCard]
+    const [selectedItem,setSelectedItem] = [root.selectedItem as T,root.setSelectedItem]
     if(actionHandler==null){
         actionHandler = new ModelActionHandler<T>()
     }
@@ -63,44 +64,44 @@ export function Listing<T extends Model>(props: ListingProps<T>) {
         };
 
         fetchItems();
-    }, [modelClass]);
-    if(selectedCard != null && selectedCard.listing != null){
-        if (loading) {
-            return (
-                <div className="flex items-center justify-center h-full">
-                    <p className="text-lg font-semibold text-gray-800 text-center m-60">
-                        Loading items...
-                    </p>
-                </div>
-            );
-        }
+    }, [selectedCard]);
+    if(selectedCard != null && selectedCard.model != null){
+        // if (loading) {
+        //     return (
+        //         <div className="flex items-center justify-center h-full">
+        //             <p className="text-lg font-semibold text-gray-800 text-center m-60">
+        //                 Loading items...
+        //             </p>
+        //         </div>
+        //     );
+        // }
 
-        if (error) {
-            return (
-                <div className="flex items-center justify-center h-full">
-                    <p className="text-lg font-semibold text-red-500 text-center m-60">
-                        {error}
-                    </p>
-                </div>
-            );
-        }
+        // if (error) {
+        //     return (
+        //         <div className="flex items-center justify-center h-full">
+        //             <p className="text-lg font-semibold text-red-500 text-center m-60">
+        //                 {error}
+        //             </p>
+        //         </div>
+        //     );
+        // }
 
-        if (items.length === 0) {
-            return (
-                <div className="flex items-center justify-center h-full">
-                    <p className="text-lg font-semibold text-gray-800 text-center m-60">
-                        No items found.
-                    </p>
-                </div>
-            );
-        }
+        // if (items.length === 0) {
+        //     return (
+        //         <div className="flex items-center justify-center h-full">
+        //             <p className="text-lg font-semibold text-gray-800 text-center m-60">
+        //                 No items found.
+        //             </p>
+        //         </div>
+        //     );
+        // }
 
         return (
             <div className=''>
                 {/* Action toolbar */}
                 <div className="flex items-center justify-start gap-2 mb-4">
                     <button
-                    onClick={()=>{}}
+                    onClick={() => actionHandler.handleAdd(selectedItem,root)}
                     className="px-8 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors duration-200"
                     >
                     Add
@@ -121,28 +122,49 @@ export function Listing<T extends Model>(props: ListingProps<T>) {
                     {selectedItem ? `Selected: ${selectedItem.id}` : ""}
                     </span>
                 </div>
-                <div className="border border-gray-300 rounded-lg overflow-hidden w-full">
-                    {/* Header */}
-                    {
-                    (()=>{
-                        // console.log(items,"ite,s")
-                        return items[0].getHeaderView()
-                    })()
-                    }
+                {
+                    loading ? (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-lg font-semibold text-gray-800 text-center m-60">
+                                Loading items...
+                            </p>
+                        </div>)
+                    : error ? (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-lg font-semibold text-red-500 text-center m-60">
+                                {error}
+                            </p>
+                        </div>)
+                    : items.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-lg font-semibold text-gray-800 text-center m-60">
+                                No items found.
+                            </p>
+                        </div>)
+                    :( 
+                    <div className="border border-gray-300 rounded-lg overflow-hidden w-full">
+                            {/* Header */}
+                            {
+                            (()=>{
+                                // console.log(items,"ite,s")
+                                return items[0].getHeaderView()
+                            })()
+                            }
 
-                    {/* Data rows */}
-                    {items.map((item: T, index) => (
-                        <div
-                            key={item.id ?? index}
-                            onClick={() => {if(selectedItem != item){setSelectedItem(item)}else{setSelectedItem(null)}}}
-                            className={`cursor-pointer ${
-                            selectedItem?.id === item.id ? "bg-gray-100" : ""
-                            }`}
-                        >
-                            {item.getItemView(root)}
-                        </div>
-                    ))}
-                </div>
+                            {/* Data rows */}
+                            {items.map((item: T, index) => (
+                                <div
+                                    key={item.id ?? index}
+                                    onClick={() => {if(selectedItem != item){setSelectedItem(item)}else{setSelectedItem(null)}}}
+                                    className={`cursor-pointer ${
+                                    selectedItem?.id === item.id ? "bg-gray-100" : ""
+                                    }`}
+                                >
+                                    {item.getItemView(root)}
+                                </div>
+                            ))}
+                    </div>)
+                }
             </div>
         );
     } else {
