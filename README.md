@@ -37,3 +37,22 @@ npm run dev                 # http://localhost:3000
 ```
 
 No credentials or `.env` files are committed; `backend/.env.example` shows the shape of the configuration.
+
+## Preview
+
+There is no hosted demo: the API needs MySQL and a seeded database, so a public URL would be a
+liability rather than a portfolio piece. What the reader can check instead:
+
+- `backend/routes/api.php` is 12 lines and shows the whole API surface.
+- `frontend/src/` holds the components the UI is actually built from (`Listing`, `NewEntry`, `Modal`,
+  `CardListing`, `CustomView`).
+- The screens in the dashboard are a table view with filters, a modal entry form, and one custom view
+  per section.
+
+If you want to see it running, it is a `composer install` and a `php artisan migrate` away - or ask me
+and I will record it.
+
+## Status and licence
+
+Working application, not a demo: written for a real retail inventory workflow. No licence file yet, so
+treat it as all rights reserved until one appears.
